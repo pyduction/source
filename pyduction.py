@@ -8,14 +8,13 @@ import tkinter.font as tkFont
 fenetre = Tk()
 fenetre.configure(bg = "#cccccc")
 fenetre.title("PyDuction")
-def dimension(self,nl,nh,bool): # a utiliser seulement pour le contenu de la fenetre principale !!
+def dimension(self,nl,nh,bool):
     self.update_idletasks()
     global l
     global h
-    l, h = self.winfo_screenwidth(), self.winfo_screenheight() #capture des dimensions de l'écran
-    self.geometry("%dx%d+0+0" % (l//nl, h//nh)) #formater la fenetre en taille et en position
+    l, h = self.winfo_screenwidth(), self.winfo_screenheight()
+    self.geometry("%dx%d+0+0" % (l//nl, h//nh))
     self.resizable(width=bool, height=bool)
-    print(l,h)
 dimension(fenetre,1,1,TRUE)
 """liste, chaine-liste, paramètres invariables"""
 global valeurbooléen
@@ -26,8 +25,6 @@ typeliste = ["int","float","str"]
 interditstr = "&(§!çà^`ù=:;,<>@#?./+£%*¨°"
 nbstr = "1234567890"
 signeliste = ["<","≤",">","≥","==","!=","dans","est"]
-#pas utile pour le moment.
-
 """menu fichier"""
 def exporter(evenement=None):
     code=Text.get(zonepy,index1=1.0,index2='end')
@@ -93,6 +90,7 @@ def center(self):
     self.update_idletasks()
     width = self.winfo_width()
     height = self.winfo_height()
+    print(width,height)
     x = (self.winfo_screenwidth() // 2) - (width // 2)
     y = (self.winfo_screenheight() // 2) - (height // 2)
     self.geometry('{}x{}+{}+{}'.format(width, height, x, y))
@@ -118,8 +116,8 @@ def rechercher(self, p):
             pass
     print(valeurbooléen)
 def alert():
-    zonefr.insert(END,"hey papi\n"*20)
-    zonepy.insert(END,"hey papi\n"*20)
+    zonefr.insert(END,"test scrollbar\n"*20)
+    zonepy.insert(END,"test scrollbar\n"*20)
     nligne()
 def etat1():
     b3.configure(state="active")
@@ -143,22 +141,10 @@ def creevariable(evenement=None):
         verifietype = spinvariable.get()
         verifievaleur = box2.get()
         verifienom = box.get()
-        nomok = False
         global  valeurok
+        nomok = False
         valeurok = False
-        typeok = True
-        """Condition pour la valeur"""
-        if verifietype == "int" or verifietype =="float":
-            try:
-                verifievaleur = float(verifievaleur)
-                valeurok = True
-            except:
-                showerror("Erreur de valeur", 'Votre valeur doit être un nombre.\n'
-                'Veuillez réessayer.')
-
-        else:
-            valeurok = True
-
+        typeok = False
         """Condition pour le nom"""
         rechercher(verifienom,interditstr)
         if verifienom[:1] in nbstr:
@@ -167,23 +153,30 @@ def creevariable(evenement=None):
         elif valeurbooléen == False:
             showerror("Erreur de nom", 'Votre nom ne doit pas contenir des caractères spéciaux.\n'
             'Veuillez réessayer.')
+        elif verifienom in varliste:
+            showerror("Erreur de nom", 'Cette variable a déjà été déclaré.\nVeuillez réessayer.')
         else:
             nomok = True
-
         """Condition pour le type"""
-        if verifietype == "int" or verifietype == "float" or verifietype == "str":
+        if verifietype in typeliste:
             typeok = True
         else:
-            typeok = False
-
+            showerror("Erreur de type", 'Votre type de variable n\'est pas valable.\n'
+            'Veuillez réessayer.')
+        """Condition pour la valeur"""
+        if verifietype in typeliste[0] or verifietype in typeliste[1]:
+            try:
+                verifievaleur = float(verifievaleur)
+                valeurok = True
+            except:
+                showerror("Erreur de valeur", 'Votre valeur doit être un nombre.\n'
+                'Veuillez réessayer.')
+        else:
+            valeurok = True
         """Condition pour effectuer la déclaration d'une variable"""
         if valeurok and nomok and typeok is True:
             print(valeurok,nomok,typeok) #aide
             confirmer()
-        elif typeok is False:
-            showerror("Erreur de type", 'Votre type de variable n\'est pas valable.\n'
-            'Veuillez réessayer.')
-            print(valeurok,nomok,typeok) #aide
     def confirmer():
         recupnom = box.get()
         recuptype = spinvariable.get()
@@ -236,18 +229,40 @@ def lirevariable(evenement=None):
     center(rideau)
     """Sous fonction"""
     def bind(event):
-        confirmer()
+        verifier()
+    def verifier():
+        verifievar = spinvar.get()
+        verifietype = spintype.get()
+        verifiemsg = box.get()
+        varok = False
+        typeok = False
+        msgok = False
+        """Condition pour la variable"""
+        if verifievar in varliste:
+           varok = True
+        else:
+            showerror('Erreur variable','La variable que vous avez renseigné n\'existe pas.\nVeuillez réessayer.')
+        """Condition pour le type"""
+        if verifietype in typeliste:
+            typeok = True
+        else:
+            showerror('Erreur type','Le type que vous avez renseigné n\'existe pas.\nVeuillez réessayer.')
+        """Condition pour l'instruction"""
+        if len(verifiemsg) >0:
+            msgok = True
+        else:
+            showerror('Erreur instruction', 'Vous n\'avez renseigné aucune instruction.\nVeuillez réessayer.')
+        """Confirmation"""
+        if msgok and varok and typeok is True:
+            confirmer()
     def confirmer():
         recupvar = spinvar.get()
         recuptype = spintype.get()
         recupmsg = box.get()
-        if recupvar in varliste:
-            zonepy.insert(END, "{} = {}(input(\"{}: \"))\n".format(recupvar,recuptype,recupmsg))
-            zonefr.insert(END, "Lecture de {} du type {} suivant cette instruction \"{}\"\n".format(recupvar,recuptype,recupmsg))
-            nligne()
-            rideau.destroy()
-        else:
-            showerror('Erreur variable','La variable que vous avez renseigné n\'existe pas.\nVeuillez réessayer.')
+        zonepy.insert(END, "{} = {}(input(\"{}: \"))\n".format(recupvar,recuptype,recupmsg))
+        zonefr.insert(END, "Lecture de {} du type {} suivant cette instruction \"{}\"\n".format(recupvar,recuptype,recupmsg))
+        nligne()
+        rideau.destroy()
     def aide():
         tringle = Toplevel()
         tringle.title("Lire une variable")
@@ -268,7 +283,7 @@ def lirevariable(evenement=None):
     type = Spinbox(rideau, values=typeliste, textvariable=spintype, width=5)
     message = Entry(rideau,textvariable=box,width=20)
     aide = Button(rideau, text="Aide", command=aide)
-    lire = Button(rideau, text="Lire", command=confirmer)
+    lire = Button(rideau, text="Lire", command=verifier)
     """Position des variables"""
     Label(rideau, text="Type de variable: ").grid(row=1,column=0,sticky=W,pady=2)
     Label(rideau,text="Lire la variable: ").grid(row=0,column=0,sticky=W,pady=2)
@@ -288,23 +303,38 @@ def affecter(evenement=None):
     center(rideau)
     """Sous fonction"""
     def bind(event):
-        confirmaff()
-    def confirmaff():
-        recupvaleur = box.get()
-        recupvar = spinvar.get()
-        if recupvar in varliste:
-            zonepy.insert(END, "{} = {}\n".format(recupvar,recupvaleur))
-            zonefr.insert(END, "La variable {} prend comme valeur: {}\n".format(recupvar,recupvaleur))
-            nligne()
-            rideau.destroy()
+        verifier()
+    def verifier():
+        verifievar = spinvar.get()
+        verifievaleur = box.get()
+        varok = False
+        valeurok = False
+        """Condition valeur """
+        if len(verifievaleur) > 0:
+            valeurok = True
+        else:
+            showerror("Erreur d'affectation", "Le champs d'affectation est vide.\nVeuillez réessayer.")
+        """Condition variable"""
+        if verifievar in varliste:
+            varok = True
         else:
             showerror('Erreur variable','La variable que vous avez renseigné n\'existe pas.\nVeuillez réessayer.')
+        """Confirmation"""
+        if valeurok and varok is True:
+            confirmer()
+    def confirmer():
+        recupvaleur = box.get()
+        recupvar = spinvar.get()
+        zonepy.insert(END, "{} = {}\n".format(recupvar,recupvaleur))
+        zonefr.insert(END, "La variable {} prend comme valeur: {}\n".format(recupvar,recupvaleur))
+        nligne()
+        rideau.destroy()
     """variables tkinter"""
     spinvar = StringVar()
     box = StringVar()
     variable = Spinbox(rideau,values=(varliste),textvariable=(spinvar),width=10)
     entree = Entry(rideau, textvariable=box, width=30)
-    affecter = Button(rideau, text="Affecter", command=confirmaff)
+    affecter = Button(rideau, text="Affecter", command=verifier)
     """placement des variables"""
     Label(rideau, text='Prend la valeur de ').grid(row=0,column=1,padx=5,pady=2,)
     variable.grid(row=0,column=0,padx=5,pady=2)
@@ -326,20 +356,23 @@ def affichervar(evenement=None):
     center(rideau)
     """sous fonction"""
     def bind(event):
-        confirmer()
-    def confirmer():
-        recupvar=spinvariable.get()
-        if recupvar in varliste:
-            zonepy.insert(END, "print({})\n".format(recupvar))
-            zonefr.insert(END, "Affichage de la variable: {}\n".format(recupvar))
-            nligne()
-            rideau.destroy()
+        verifier()
+    def verifier():
+        verifievar = spinvariable.get()
+        if verifievar in varliste:
+            confirmer()
         else:
             showerror("Erreur variable","La variable que vous avez renseigné n\'existe pas.\nVeuillez réessayer.")
+    def confirmer():
+        recupvar=spinvariable.get()
+        zonepy.insert(END, "print({})\n".format(recupvar))
+        zonefr.insert(END, "Affichage de la variable: {}\n".format(recupvar))
+        nligne()
+        rideau.destroy()
     """Définition des variables"""
     spinvariable = StringVar()
     variable = Spinbox(rideau,values=varliste,textvariable=spinvariable,width=15)
-    afficher = Button(rideau,text="Afficher",command=confirmer)
+    afficher = Button(rideau,text="Afficher",command=verifier)
     """Position des variables"""
     Label(rideau,text="Afficher la variable: ").grid(row=0,column=0,padx=2,pady=2)
     variable.grid(row=0,column=1,padx=2,pady=2)
@@ -355,21 +388,24 @@ def affichertxt(evenement=None):
     center(rideau)
     """sous fonction"""
     def bind(event):
-        confirmer()
-    def confirmer():
-        recuptxt=box.get()
-        if len(recuptxt) > 0:
-            zonepy.insert(END, "print(\"{}\")\n".format(recuptxt))
-            zonefr.insert(END, "Affichage du texte: {}\n".format(recuptxt))
-            nligne()
-            etat3()
-            rideau.destroy()
+        verifier()
+    def verifier():
+        verifietxt = box.get()
+        if len(verifietxt) > 0:
+            confirmer()
         else:
             showerror("Erreur", "Vous n'avez entré aucun texte.\nVeuillez réessayer.")
+    def confirmer():
+        recuptxt=box.get()
+        zonepy.insert(END, "print(\"{}\")\n".format(recuptxt))
+        zonefr.insert(END, "Affichage du texte: {}\n".format(recuptxt))
+        nligne()
+        etat3()
+        rideau.destroy()
     """Définition des variables"""
     box = StringVar()
     txt = Entry(rideau,textvariable=box,width=18)
-    afficher = Button(rideau,text="Afficher",command=confirmer)
+    afficher = Button(rideau,text="Afficher",command=verifier)
     """Position des variables"""
     Label(rideau,text="Afficher le texte: ").grid(row=0,column=0,padx=2,pady=2)
     txt.grid(row=0,column=1,padx=2,pady=2)
@@ -385,21 +421,24 @@ def afficherclc(evenement=None):
     center(rideau)
     """sous fonction"""
     def bind(event):
-        confirmer()
-    def confirmer():
-        recupclc=box.get()
-        if len(recupclc) > 0:
-            zonepy.insert(END, "print({})\n".format(recupclc))
-            zonefr.insert(END, "Affichage du calcul: {}\n".format(recupclc))
-            nligne()
-            etat3()
-            rideau.destroy()
+        verifier()
+    def verifier():
+        verifieclc = box.get()
+        if len(verifieclc) > 0:
+            confirmer()
         else:
             showerror("Erreur", "Vous n'avez entré aucun calcul.\nVeuillez réessayer.")
+    def confirmer():
+        recupclc=box.get()
+        zonepy.insert(END, "print({})\n".format(recupclc))
+        zonefr.insert(END, "Affichage du calcul: {}\n".format(recupclc))
+        nligne()
+        etat3()
+        rideau.destroy()
     """Définition des variables"""
     box = StringVar()
     clc = Entry(rideau,textvariable=box,width=18)
-    afficher = Button(rideau,text="Afficher",command=confirmer)
+    afficher = Button(rideau,text="Afficher",command=verifier)
     """Position des variables"""
     Label(rideau,text="Afficher le calcul: ").grid(row=0,column=0,padx=2,pady=2)
     clc.grid(row=0,column=1,padx=2,pady=2)
@@ -550,10 +589,14 @@ def pour(evenement=None):
     def confirmer():
         recupvaleur = box.get()
         recupvaleur2 = box2.get()
-        recupvaleur2=int(recupvaleur2)+1#car par défaut python prend n-1, d'ou le +1
-        print(recupvaleur, recupvaleur2)
-        zonefr.insert(END,"Pour i allant de {} à {} alors:\n".format(recupvaleur, recupvaleur2))
-        zonepy.insert(END,"for i in range({},{}):\n".format(recupvaleur,recupvaleur2))
+        rechercher(recupvaleur2,nbstr)
+        if valeurbooléen == False:
+            recupvaleur2=int(recupvaleur2)+1#car par défaut python prend n-1, d'ou le +1
+            zonefr.insert(END,"Pour i allant de {} à {} alors:\n".format(recupvaleur, recupvaleur2))
+            zonepy.insert(END,"for i in range({},{}):\n".format(recupvaleur,recupvaleur2))
+        else:
+            zonefr.insert(END,"Pour i allant de {} à {} alors:\n".format(recupvaleur, recupvaleur2))
+            zonepy.insert(END,"for i in range({},{}+1):\n".format(recupvaleur,recupvaleur2))
         nligne()
         etat2()
         etat3()
